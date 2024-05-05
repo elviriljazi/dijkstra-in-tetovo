@@ -1,4 +1,4 @@
-let fetchData = fetch('/roads.geojson')
+let fetchData = fetch('./roads.geojson')
     .then(res => res.json());
 
 export let roads = [];
