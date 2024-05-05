@@ -57,11 +57,11 @@ function findNearestNode(currentNode) {
     return nearestNode;
 }
 
+
+let locations = [];
 map.on("click", (event) => {
     let currentNode = [event.latlng.lat, event.latlng.lng];
     let nearestNode = findNearestNode(currentNode);
-    console.log(currentNode)
-    console.log(nearestNode)
     L.polyline([
         currentNode,
         nearestNode

@@ -1,22 +1,25 @@
-let result = await fetch('/roads.geojson')
+let fetchData = fetch('/roads.geojson')
     .then(res => res.json());
 
 export let roads = [];
-result.features.forEach(feature => {
-    if (feature.geometry === null) {
-        return;
-    }
-    if (feature.properties.highway !== 'secondary'
-        && feature.properties.highway !== 'residential'
-        && feature.properties.highway !== 'tertiary'
-    ) {
-        return;
-    }
+Promise.resolve(fetchData).then(r => {
+    r.features.forEach(feature => {
+        if (feature.geometry === null) {
+            return;
+        }
+        if (feature.properties.highway !== 'secondary'
+            && feature.properties.highway !== 'residential'
+            && feature.properties.highway !== 'tertiary'
+        ) {
+            return;
+        }
 
-    feature.geometry.coordinates.forEach(coordinate => coordinate.reverse())
-    roads.push(feature.geometry.coordinates)
+        feature.geometry.coordinates.forEach(coordinate => coordinate.reverse())
+        roads.push(feature.geometry.coordinates)
 
-})
+    });
+});
+
 
 export function getDistance(node1, node2) {
     let latDistance = node2[0] - node1[0];
