@@ -31,6 +31,15 @@ let greenIcon = new L.Icon({
     shadowSize: [41, 41]
 });
 
+let blueIcon = new L.Icon({
+    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41]
+});
+
 roads.forEach(road => L.polyline(road, {
         color: 'green',
         weight: 3,
@@ -75,7 +84,7 @@ map.on("click", (event) => {
         L.marker(currentNode, {icon: greenIcon})
             .addTo(map);
     } else if (locations.length <= 10) {
-        L.marker(currentNode).addTo(map)
+        L.marker(currentNode, {icon: blueIcon}).addTo(map)
     } else {
         map.off("click")
     }
