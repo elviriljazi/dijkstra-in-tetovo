@@ -4,6 +4,7 @@ import L from "leaflet";
 import './utilities/streets.js'
 import {findNearestNode, cityMap, streets} from "./utilities/streets.js";
 import MicroModal from 'micromodal';
+import applyDijkstra from "./utilities/dijkstra.js";
 
 const customerLimit = 10;
 
@@ -70,53 +71,36 @@ function findNearestLocation(locations, distances) {
     return nearestLocation;
 }
 
-function triggerDijkstraWorker(startPoint, i) {
-    return new Promise((resolve, ignore) => {
+let routes = [];
 
-        dijkstraWorker.postMessage(
-            {
-                cityMap: cityMap,
-                startPoint: startPoint
-            }
-        );
-        dijkstraWorker.onmessage = function (e) {
-            let dijkstra = e.data;
-
+async function generateRoute() {
+    let startPoint = locations.shift();
+    for (let i = 1; i <= customerLimit; i++) {
+        await new Promise((resolve, ignore) => {
+            let dijkstra = applyDijkstra(cityMap, startPoint);
             let destinationPoint = findNearestLocation(locations, dijkstra.distances);
             let path = [];
             String(dijkstra.paths[destinationPoint]).split("->")
                 .forEach((coordinate) => {
                     path.push(coordinate.split(","));
                 })
-     //        console.log(`
-     // index:  ${i}
-     // locations:  ${locations}
-     // currentLocation:  ${currentLocation}
-     // nextLocation: ${nextLocation}
-     // path: ${path}
-     //    `)
-            L.polyline(path,
-                {
-                    color: 'red',
-                    weight: 3,
-                    smoothFactor: 1
-                }).addTo(map);
+            console.log(`
+            index:  ${i}
+            locations:  ${locations}
+            startPoint:  ${startPoint}
+            destinationPoint: ${destinationPoint}
+            path: ${path}
+               `)
+            routes.push(path);
             startPoint = destinationPoint;
+            console.log(startPoint)
             locations = locations.filter(location => location !== destinationPoint);
             resolve();
-        }
-    })
-}
+        });
 
-async function generateRoute() {
-    let currentLocation = locations.shift();
-    for (let i = 1; i <= customerLimit; i++) {
-        await triggerDijkstraWorker(currentLocation, i);
+
     }
 }
-
-const dijkstraWorker = new Worker('./dijkstra.js');
-
 
 document.getElementById("next-2").addEventListener("click", function () {
     closeModal('modal-2');
@@ -125,8 +109,20 @@ document.getElementById("next-2").addEventListener("click", function () {
             map.off('click');
             generateRoute()
                 .then(() => {
-                    console.log("Routes are successfully generated.");
-                });
+                    console.log(routes)
+                    routes.forEach(route => {
+                        setTimeout(() => {
+                            L.polyline(route,
+                                {
+                                    color: 'red',
+                                    weight: 3,
+                                    smoothFactor: 1
+                                }).addTo(map);
+                        }, 700);
+                    });
+
+
+                })
             return;
         }
 
