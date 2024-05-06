@@ -81,7 +81,6 @@ function triggerDijkstraWorker(currentLocation, i) {
         );
         dijkstraWorker.onmessage = function (e) {
             let dijkstra = e.data;
-            console.log(dijkstra)
 
             let nextLocation = findNearestLocation(locations, dijkstra.distances);
             let path = [];
@@ -89,13 +88,13 @@ function triggerDijkstraWorker(currentLocation, i) {
                 .forEach((coordinate) => {
                     path.push(coordinate.split(","));
                 })
-            console.log(`
-     index:  ${i}
-     locations:  ${locations}
-     currentLocation:  ${currentLocation}
-     nextLocation: ${nextLocation}
-     path: ${path}
-        `)
+     //        console.log(`
+     // index:  ${i}
+     // locations:  ${locations}
+     // currentLocation:  ${currentLocation}
+     // nextLocation: ${nextLocation}
+     // path: ${path}
+     //    `)
             L.polyline(path,
                 {
                     color: 'red',
@@ -116,7 +115,7 @@ async function generateRoute() {
     }
 }
 
-const dijkstraWorker = new Worker('./utilities/dijkstra.js');
+const dijkstraWorker = new Worker('./dijkstra.js');
 
 
 document.getElementById("next-2").addEventListener("click", function () {
