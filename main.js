@@ -2,7 +2,8 @@ import "./style.css";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import './utilities/roads.js'
-import {getDistance, roads} from "./utilities/roads.js";
+import {findNearestRoad, graph, roads} from "./utilities/roads.js";
+import {applyDijkstra} from "./utilities/dijikstra.js";
 
 let appNode = document.getElementById("app");
 appNode.innerHTML = `
@@ -47,30 +48,15 @@ roads.forEach(road => L.polyline(road, {
     }).addTo(map)
 );
 
-function findShortestPath(locations, map) {
-
-}
-
-function findNearestNode(currentNode) {
-    let nearestNode = null;
-    let prevDistance = Number.MAX_VALUE;
-    roads.forEach(road => {
-        road.forEach((node) => {
-            let distance = getDistance(currentNode, node)
-            if (distance < prevDistance) {
-                prevDistance = distance;
-                nearestNode = node;
-            }
-        })
-    })
-    return nearestNode;
-}
-
 
 let locations = [];
 map.on("click", (event) => {
+    if (locations.length === 10) {
+        map.off("click")
+    }
+
     let currentNode = [event.latlng.lat, event.latlng.lng];
-    let nearestNode = findNearestNode(currentNode);
+    let nearestNode = findNearestRoad(currentNode);
     L.polyline([
         currentNode,
         nearestNode
@@ -85,14 +71,12 @@ map.on("click", (event) => {
             .addTo(map);
     } else if (locations.length <= 10) {
         L.marker(currentNode, {icon: blueIcon}).addTo(map)
-    } else {
-        map.off("click")
     }
+    locations.push(nearestNode);
 
     if (locations.length === 2) {
-        findShortestPath(locations, map);
+        applyDijkstra(graph, String(locations[0]), String(locations[1]), map)
     }
-    locations.push(currentNode);
 })
 
 
