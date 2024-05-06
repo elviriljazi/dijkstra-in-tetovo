@@ -1,4 +1,9 @@
-export function applyDijkstra(cityMap, start, end, map) {
+onmessage = function (event) {
+    applyDijkstra(event.data.cityMap, event.data.start);
+}
+
+
+function applyDijkstra(cityMap, start) {
     // Create an object to store the shortest distance from the start point to every end points
     let distances = {};
     let paths = [];
@@ -40,31 +45,15 @@ export function applyDijkstra(cityMap, start, end, map) {
                 if (newDistance < distances[neighborPoint]) {
                     // Update the shortest distance to this neighbor
                     distances[neighborPoint] = newDistance;
-                    paths[neighborPoint] = paths[closestPoint] + "~" + neighborPoint;
-                    if (closestPoint === end) {
-                        console.log("end")
-
-                        let path = [];
-                        paths[closestPoint].split("~")
-                            .forEach((coordinate) => {
-                                path.push(coordinate.split(","));
-                            })
-                        console.log(path)
-                        L.polyline(path,
-                            {
-                                color: 'red',
-                                weight: 3,
-                                smoothFactor: 1
-                            }).addTo(map);
-
-                        // Return the shortest distance
-                        return distances[closestPoint];
-                    }
+                    paths[neighborPoint] = paths[closestPoint] + "->" + neighborPoint;
                 }
             }
         }
     }
 
     // Return the shortest distance from the start points to all map points
-    return distances;
+    postMessage({
+        distances: distances,
+        paths: paths
+    })
 }

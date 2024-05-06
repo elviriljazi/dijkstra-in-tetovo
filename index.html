@@ -2,12 +2,80 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8"/>
-<!--    <link rel="icon" type="image/svg+xml" href="/vite.svg"/>-->
-<!--    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>-->
+    <!--    <link rel="icon" type="image/svg+xml" href="/vite.svg"/>-->
+    <!--    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>-->
     <title>Vite App</title>
 </head>
 <body>
-<div id="app"></div>
+
+<div id="map"></div>
+
+<div class="modal micromodal-slide" id="modal-1" aria-hidden="true">
+    <div class="modal__overlay" tabindex="-1">
+        <div class="modal__welcome_container" role="dialog" aria-modal="true" aria-labelledby="modal-1-title">
+            <header class="modal__header">
+                <h2 class="modal__title" id="modal-1-title">
+                    Dijkstra in Tetovo!
+                </h2>
+            </header>
+            <main class="modal__content" id="modal-1-content">
+                <p>
+                    Welcome to our website showcasing the results of our research project on optimizing order
+                    distribution in Tetovo using Dijkstra’s Algorithm!
+
+                    As team dedicated to exploring innovative solutions, we embarked on a journey to enhance the
+                    efficiency of order delivery in Tetovo. Through our research, we have utilized OpenStreetMap and the
+                    Leaflet library to implement Dijkstra’s Algorithm, a powerful tool for finding the shortest paths in
+                    a network.
+
+                    Our project aims to contribute valuable insights to the field of logistics and transportation
+                    planning. By applying Dijkstra’s Algorithm to the unique urban landscape of Tetovo, we have
+                    uncovered strategies to improve order distribution processes, reduce delivery times, and minimize
+                    resource wastage.
+
+                    Through this website, we share our findings and methodologies, providing a glimpse into the
+                    potential of computational algorithms in optimizing real-world scenarios. Whether you are a fellow
+                    student, a researcher, or an enthusiast in the field, we invite you to explore our project and join
+                    us in the pursuit of knowledge and innovation.
+
+                    Thank you for visiting, and we hope our research inspires further exploration and advancements in
+                    the field of logistics optimization.
+                </p>
+                <p>
+                    <em>Authors: Miranda Xhaferi, Elvir Iljazi</em>
+                </p>
+            </main>
+            <footer class="modal__footer">
+
+                <button id="next-1" class="modal__btn modal__btn-primary">Next</button>
+            </footer>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="modal micromodal-slide" id="modal-2" aria-hidden="true">
+    <div class="modal__overlay" tabindex="-1">
+        <div class="modal__welcome_container" role="dialog" aria-modal="true" aria-labelledby="modal-1-title">
+            <header class="modal__header">
+                <h2 class="modal__title" id="modal-2-title">
+                    Dijkstra in Tetovo!
+                </h2>
+            </header>
+            <main class="modal__content" id="modal-2-content">
+                <p>
+                    Please select a warehouse and ten customer locations in the map.
+                </p>
+            </main>
+            <footer class="modal__footer">
+
+                <button id="next-2" class="modal__btn modal__btn-primary">Next</button>
+            </footer>
+        </div>
+    </div>
+</div>
+
 <script type="module" src="/main.js"></script>
 </body>
 </html>
