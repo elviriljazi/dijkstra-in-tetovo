@@ -84,16 +84,15 @@ async function generateRoute() {
                 .forEach((coordinate) => {
                     path.push(coordinate.split(","));
                 })
-            console.log(`
-            index:  ${i}
-            locations:  ${locations}
-            startPoint:  ${startPoint}
-            destinationPoint: ${destinationPoint}
-            path: ${path}
-               `)
+            // console.log(`
+            // index:  ${i}
+            // locations:  ${locations}
+            // startPoint:  ${startPoint}
+            // destinationPoint: ${destinationPoint}
+            // path: ${path}
+            //    `)
             routes.push(path);
             startPoint = destinationPoint;
-            console.log(startPoint)
             locations = locations.filter(location => location !== destinationPoint);
             resolve();
         });
@@ -109,7 +108,6 @@ document.getElementById("next-2").addEventListener("click", function () {
             map.off('click');
             generateRoute()
                 .then(() => {
-                    console.log(routes)
                     routes.forEach(route => {
                         setTimeout(() => {
                             L.polyline(route,
