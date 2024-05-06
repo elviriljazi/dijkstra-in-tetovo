@@ -1,9 +1,9 @@
 onmessage = function (event) {
-    applyDijkstra(event.data.cityMap, event.data.start);
+    applyDijkstra(event.data.cityMap, event.data.startPoint);
 }
 
 
-function applyDijkstra(cityMap, start) {
+function applyDijkstra(cityMap, startPoint) {
     // Create an object to store the shortest distance from the start point to every end points
     let distances = {};
     let paths = [];
@@ -20,10 +20,10 @@ function applyDijkstra(cityMap, start) {
     }
 
     // The distance from the start point to itself is 0
-    distances[start] = 0;
+    distances[startPoint] = 0;
 
     // And path is start point coordinates
-    paths[start] = start;
+    paths[startPoint] = startPoint;
 
     // Loop until all points are visited
     while (points.length) {

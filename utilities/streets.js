@@ -2,8 +2,8 @@ let fetchData = fetch('./roads.geojson')
     .then(res => res.json());
 
 
-export let roads = [];
-export let graph = {};
+export let streets = [];
+export let cityMap = {};
 Promise.resolve(fetchData).then(r => {
     r.features.forEach(feature => {
         if (feature.properties.highway !== 'secondary'
@@ -23,34 +23,34 @@ Promise.resolve(fetchData).then(r => {
                 nodeA: coordinate.join(","),
                 nodeB: coordinates[index + 1].join(",")
             }
-            if (graph[obj.nodeA] === undefined) {
-                graph[obj.nodeA] = {};
+            if (cityMap[obj.nodeA] === undefined) {
+                cityMap[obj.nodeA] = {};
             }
-            if (graph[obj.nodeB] === undefined) {
-                graph[obj.nodeB] = {};
+            if (cityMap[obj.nodeB] === undefined) {
+                cityMap[obj.nodeB] = {};
             }
-            graph[obj.nodeA][obj.nodeB] = {
+            cityMap[obj.nodeA][obj.nodeB] = {
                 name: feature.properties.name,
                 surface: feature.properties.surface,
                 distance: getDistance(coordinate, coordinates[index + 1]),
             };
-            graph[obj.nodeB][obj.nodeA] = {
+            cityMap[obj.nodeB][obj.nodeA] = {
                 name: feature.properties.name,
                 surface: feature.properties.surface,
                 distance: getDistance(coordinate, coordinates[index + 1]),
             };
-            roads.push(obj)
+            streets.push(obj)
         })
     });
 
-    // console.log(graph)
+    // console.log(cityMap)
 });
 
-export function findNearestRoad(currentNode) {
+export function findNearestNode(currentNode) {
     let nearestNode = undefined;
     let prevDistance = Number.MAX_VALUE;
 
-    roads.forEach(road => {
+    streets.forEach(road => {
         let distance = getDistance(currentNode, road.nodeA.split(","))
         if (distance < prevDistance) {
             prevDistance = distance;
