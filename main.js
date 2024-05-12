@@ -2,11 +2,15 @@ import "./style.css";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import './utilities/streets.js'
-import {findNearestNode, cityMap, streets} from "./utilities/streets.js";
+import {findNearestNode, loadData} from "./utilities/streets.js";
 import MicroModal from 'micromodal';
 import applyDijkstra from "./utilities/dijkstra.js";
+import {loading} from "./utilities/common.js";
+import {blueIcon, greenIcon} from "./utilities/markers.js";
 
 const customerLimit = 10;
+let data = await loadData();
+
 
 const map = L.map("map", {
     // zoomControl: false,
@@ -19,33 +23,6 @@ L.tileLayer("https://{s}.tile.osm.org/{z}/{x}/{y}.png", {
     attribution:
         '&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
 }).addTo(map);
-
-
-let greenIcon = new L.Icon({
-    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
-    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    shadowSize: [41, 41]
-});
-
-let blueIcon = new L.Icon({
-    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
-    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    shadowSize: [41, 41]
-});
-
-streets.forEach(road => L.polyline(road, {
-        color: 'green',
-        weight: 3,
-        smoothFactor: 1
-    }).addTo(map)
-);
-
 
 let locations = [];
 
@@ -71,14 +48,14 @@ function findNearestLocation(locations, distances) {
     return nearestLocation;
 }
 
-let routes = [];
-
 async function generateRoute() {
-    let startPoint = locations.shift();
-    for (let i = 1; i <= customerLimit; i++) {
-        await new Promise((resolve, ignore) => {
-            let dijkstra = applyDijkstra(cityMap, startPoint);
-            let destinationPoint = findNearestLocation(locations, dijkstra.distances);
+    return new Promise(async (resolve, reject) => {
+        let initPoint = locations.shift();
+        let startPoint = initPoint;
+        for (let i = 0; i <= customerLimit; i++) {
+            let dijkstra = await applyDijkstra(data.cityMap, startPoint);
+            let destinationPoint = locations.length === 0 ? initPoint :
+                findNearestLocation(locations, dijkstra.distances);
             let path = [];
             String(dijkstra.paths[destinationPoint]).split("->")
                 .forEach((coordinate) => {
@@ -91,58 +68,81 @@ async function generateRoute() {
             // destinationPoint: ${destinationPoint}
             // path: ${path}
             //    `)
-            routes.push(path);
+
             startPoint = destinationPoint;
             locations = locations.filter(location => location !== destinationPoint);
+
+            L.polyline(path,
+                {
+                    color: 'red',
+                    weight: 3,
+                    smoothFactor: 1
+                }).addTo(map)
+            console.log("route " + Date.now())
             resolve();
-        });
-
-
-    }
+        }
+    })
 }
 
-document.getElementById("next-2").addEventListener("click", function () {
-    closeModal('modal-2');
+// let selectedMethod;
+// document.getElementById('shorter').addEventListener("click", () => {
+//     selectedMethod = 'shorter'
+//     closeModal("modal-2")
+//     showModal("modal-3")
+//     document.getElementById('shorter').removeEventListener("click", () => {
+//     })
+// });
+//
+// document.getElementById('faster').addEventListener("click", () => {
+//     selectedMethod = 'faster'
+//     closeModal("modal-2")
+//     showModal("modal-3")
+//     document.getElementById('faster').removeEventListener("click", () => {
+//     })
+// });
+
+function addLocation(currentNode) {
+    let nearestNode = findNearestNode(data.streets, currentNode);
+    L.polyline([
+        currentNode,
+        nearestNode
+    ], {
+        color: 'red',
+        weight: 3,
+        smoothFactor: 1,
+        dashArray: '1, 5'
+    }).addTo(map)
+
+    if (locations.length === 0) {
+        L.marker(currentNode, {
+            icon: greenIcon
+        }).addTo(map);
+    } else if (locations.length <= customerLimit) {
+
+        L.marker(currentNode, {icon: blueIcon})
+            .bindTooltip(String.fromCharCode(64 + locations.length), {
+                permanent: true,
+                direction: 'left',
+                className: 'my-labels'
+            })
+            .addTo(map)
+    }
+    locations.push(nearestNode);
+}
+
+document.getElementById("next-3").addEventListener("click", () => {
+    closeModal('modal-3');
     map.on("click", (event) => {
-        if (locations.length === customerLimit + 1) {
+        if (locations.length !== customerLimit + 1) {
+            addLocation([event.latlng.lat, event.latlng.lng]);
+        } else {
             map.off('click');
-            generateRoute()
-                .then(() => {
-                    routes.forEach(route => {
-                        setTimeout(() => {
-                            L.polyline(route,
-                                {
-                                    color: 'red',
-                                    weight: 3,
-                                    smoothFactor: 1
-                                }).addTo(map);
-                        }, 700);
-                    });
-
-
-                })
-            return;
+            loading(true);
+            let route = generateRoute();
+            route.then(() => {
+                loading(false)
+            })
         }
-
-        let currentNode = [event.latlng.lat, event.latlng.lng];
-        let nearestNode = findNearestNode(currentNode);
-        L.polyline([
-            currentNode,
-            nearestNode
-        ], {
-            color: 'red',
-            weight: 3,
-            smoothFactor: 1,
-            dashArray: '1, 5'
-        }).addTo(map)
-
-        if (locations.length === 0) {
-            L.marker(currentNode, {icon: greenIcon})
-                .addTo(map);
-        } else if (locations.length <= customerLimit) {
-            L.marker(currentNode, {icon: blueIcon}).addTo(map)
-        }
-        locations.push(nearestNode);
     })
 })
 
@@ -153,6 +153,8 @@ showModal('modal-1');
 document.getElementById("next-1")
     .addEventListener('click', () => {
         closeModal('modal-1');
-        showModal('modal-2');
+        showModal('modal-3');
+
+        // showModal('modal-2');
     })
 

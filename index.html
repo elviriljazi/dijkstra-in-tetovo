@@ -8,7 +8,11 @@
 </head>
 <body>
 
+<div id="loading" class="loading">
+    <p>Loading...</p>
+</div>
 <div id="map"></div>
+
 
 <div class="modal micromodal-slide" id="modal-1" aria-hidden="true">
     <div class="modal__overlay" tabindex="-1">
@@ -54,7 +58,6 @@
 </div>
 
 
-
 <div class="modal micromodal-slide" id="modal-2" aria-hidden="true">
     <div class="modal__overlay" tabindex="-1">
         <div class="modal__welcome_container" role="dialog" aria-modal="true" aria-labelledby="modal-1-title">
@@ -65,12 +68,32 @@
             </header>
             <main class="modal__content" id="modal-2-content">
                 <p>
+                    Select the method you prefer for calculation:
+                </p>
+            </main>
+            <footer class="modal__footer">
+                <button id="faster" class="modal__btn modal__btn-primary">Faster Way</button>
+                <button id="shorter" class="modal__btn modal__btn-primary">Shorter Way</button>
+            </footer>
+        </div>
+    </div>
+</div>
+
+<div class="modal micromodal-slide" id="modal-3" aria-hidden="true">
+    <div class="modal__overlay" tabindex="-1">
+        <div class="modal__welcome_container" role="dialog" aria-modal="true" aria-labelledby="modal-1-title">
+            <header class="modal__header">
+                <h2 class="modal__title" id="modal-3-title">
+                    Dijkstra in Tetovo!
+                </h2>
+            </header>
+            <main class="modal__content" id="modal-3-content">
+                <p>
                     Please select a warehouse and ten customer locations in the map.
                 </p>
             </main>
             <footer class="modal__footer">
-
-                <button id="next-2" class="modal__btn modal__btn-primary">Next</button>
+                <button id="next-3" class="modal__btn modal__btn-primary">Next</button>
             </footer>
         </div>
     </div>

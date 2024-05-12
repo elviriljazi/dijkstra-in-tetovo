@@ -1,5 +1,4 @@
 export default function applyDijkstra(cityMap, startPoint) {
-    console.log(startPoint)
     // Create an object to store the shortest distance from the start point to every end points
     let distances = {};
     let paths = [];
@@ -47,7 +46,7 @@ export default function applyDijkstra(cityMap, startPoint) {
         }
     }
 
-    // Return the shortest distance from the start points to all map points
+    // Return the shortest distances and paths from the start points to all map points
     return {
         distances: distances,
         paths: paths

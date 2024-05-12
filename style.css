@@ -8,6 +8,18 @@ body {
     z-index: 0;
 }
 
+.loading {
+    background: white;
+    opacity: 30%;
+    height: 100vh;
+    width: 100vw;
+    display: none;
+    position: absolute;
+    align-content: center;
+    text-align: center;
+    z-index: 1;
+}
+
 /**************************\
   Basic Modal Styles
 \**************************/
@@ -64,9 +76,17 @@ body {
     box-sizing: border-box;
 }
 
+.leaflet-tooltip.my-labels {
+    background-color: white;
+    border: transparent;
+    color: #00449e;
+    box-shadow: none;
+    font-size: 15px;
+}
+
 .modal__footer {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-evenly;
 }
 
 .modal__close {

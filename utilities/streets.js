@@ -1,52 +1,60 @@
-let fetchData = fetch('./roads.geojson')
-    .then(res => res.json());
+export function loadData() {
+    let streets = [];
+    let cityMap = {};
+    let fetchData = fetch('./roads.geojson')
+        .then(res => res.json());
 
 
-export let streets = [];
-export let cityMap = {};
-Promise.resolve(fetchData).then(r => {
-    r.features.forEach(feature => {
-        if (feature.properties.highway !== 'secondary'
-            && feature.properties.highway !== 'residential'
-            && feature.properties.highway !== 'tertiary'
-        ) {
-            return;
+    return Promise.resolve(fetchData).then(result => {
+        let coordinateCount = 0;
+        result.features.forEach(feature => {
+            if (feature.properties.highway !== 'secondary'
+                && feature.properties.highway !== 'residential'
+                && feature.properties.highway !== 'tertiary'
+            ) {
+                return;
+            }
+            let coordinates = feature.geometry.coordinates;
+            coordinateCount += coordinates.length;
+            coordinates.forEach(coordinate => coordinate.reverse())
+
+            coordinates.forEach((coordinate, index) => {
+                if (index === feature.geometry.coordinates.length - 1) {
+                    return
+                }
+                let obj = {
+                    nodeA: coordinate.join(","),
+                    nodeB: coordinates[index + 1].join(",")
+                }
+                if (cityMap[obj.nodeA] === undefined) {
+                    cityMap[obj.nodeA] = {};
+                }
+                if (cityMap[obj.nodeB] === undefined) {
+                    cityMap[obj.nodeB] = {};
+                }
+                cityMap[obj.nodeA][obj.nodeB] = {
+                    name: feature.properties.name,
+                    surface: feature.properties.surface,
+                    distance: getDistance(coordinate, coordinates[index + 1]),
+                };
+                cityMap[obj.nodeB][obj.nodeA] = {
+                    name: feature.properties.name,
+                    surface: feature.properties.surface,
+                    distance: getDistance(coordinate, coordinates[index + 1]),
+                };
+                streets.push(obj)
+            })
+        });
+
+        // console.log(cityMap)
+        return {
+            cityMap,
+            streets
         }
-        let coordinates = feature.geometry.coordinates;
-        coordinates.forEach(coordinate => coordinate.reverse())
-
-        coordinates.forEach((coordinate, index) => {
-            if (index === feature.geometry.coordinates.length - 1) {
-                return
-            }
-            let obj = {
-                nodeA: coordinate.join(","),
-                nodeB: coordinates[index + 1].join(",")
-            }
-            if (cityMap[obj.nodeA] === undefined) {
-                cityMap[obj.nodeA] = {};
-            }
-            if (cityMap[obj.nodeB] === undefined) {
-                cityMap[obj.nodeB] = {};
-            }
-            cityMap[obj.nodeA][obj.nodeB] = {
-                name: feature.properties.name,
-                surface: feature.properties.surface,
-                distance: getDistance(coordinate, coordinates[index + 1]),
-            };
-            cityMap[obj.nodeB][obj.nodeA] = {
-                name: feature.properties.name,
-                surface: feature.properties.surface,
-                distance: getDistance(coordinate, coordinates[index + 1]),
-            };
-            streets.push(obj)
-        })
     });
+}
 
-    // console.log(cityMap)
-});
-
-export function findNearestNode(currentNode) {
+export function findNearestNode(streets, currentNode) {
     let nearestNode = undefined;
     let prevDistance = Number.MAX_VALUE;
 
