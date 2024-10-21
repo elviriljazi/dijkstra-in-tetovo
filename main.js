@@ -53,8 +53,10 @@ async function generateRoute() {
         let initPoint = locations.shift();
         let startPoint = initPoint;
         for (let i = 0; i <= customerLimit; i++) {
-            let dijkstra = await applyDijkstra(data.cityMap, startPoint);
-            let destinationPoint = locations.length === 0 ? initPoint :
+            let start = Date.now();
+            let dijkstra = applyDijkstra(data.cityMap, startPoint);
+            let destinationPoint = locations.length === 0
+                ? initPoint :
                 findNearestLocation(locations, dijkstra.distances);
             let path = [];
             String(dijkstra.paths[destinationPoint]).split("->")
@@ -74,15 +76,52 @@ async function generateRoute() {
 
             L.polyline(path,
                 {
-                    color: 'red',
+                    color: colors[i],
                     weight: 3,
                     smoothFactor: 1
                 }).addTo(map)
-            console.log("route " + Date.now())
+            console.log(`%c route ${i}  ${(Date.now() - start)}`, `color: ${colors[i]}`);
             resolve();
         }
     })
 }
+
+let colors = [
+    'red',
+    'blue',
+    'green',
+    'orange',
+    'purple',
+    'tomato',
+    'red',
+    'blue',
+    'green',
+    'orange',
+    'purple',
+    'tomato',
+]
+
+generateRandomLocations()
+
+function generateRandomLocations() {
+    let startX = 20.96,
+        endX = 20.98,
+        startY = 42,
+        endY = 42.01;
+    let deltaX = endX - startX;
+    let deltaY = endY - startY;
+    for (let i = 0; i < 11; i++) {
+        let lang = startY + Math.random() * deltaY;
+        let long = startX + Math.random() * deltaX;
+        addLocation([lang, long]);
+    }
+    loading(true);
+    let route = generateRoute();
+    route.then(() => {
+        loading(false)
+    })
+}
+
 
 // let selectedMethod;
 // document.getElementById('shorter').addEventListener("click", () => {
@@ -102,6 +141,7 @@ async function generateRoute() {
 // });
 
 function addLocation(currentNode) {
+    console.log(currentNode)
     let nearestNode = findNearestNode(data.streets, currentNode);
     L.polyline([
         currentNode,
@@ -132,23 +172,24 @@ function addLocation(currentNode) {
 
 document.getElementById("next-3").addEventListener("click", () => {
     closeModal('modal-3');
-    map.on("click", (event) => {
-        if (locations.length !== customerLimit + 1) {
-            addLocation([event.latlng.lat, event.latlng.lng]);
-        } else {
-            map.off('click');
-            loading(true);
-            let route = generateRoute();
-            route.then(() => {
-                loading(false)
-            })
-        }
-    })
+
 })
 
+map.on("click", (event) => {
+    if (locations.length !== customerLimit + 1) {
+        addLocation([event.latlng.lat, event.latlng.lng]);
+    } else {
+        map.off('click');
+        loading(true);
+        let route = generateRoute();
+        route.then(() => {
+            loading(false)
+        })
+    }
+})
 
 MicroModal.init();
-showModal('modal-1');
+// showModal('modal-1');
 
 document.getElementById("next-1")
     .addEventListener('click', () => {
