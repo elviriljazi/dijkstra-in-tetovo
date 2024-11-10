@@ -7,6 +7,7 @@ import MicroModal from 'micromodal';
 import applyDijkstra from "./utilities/dijkstra.js";
 import {loading} from "./utilities/common.js";
 import {blueIcon, greenIcon} from "./utilities/markers.js";
+import axios from "axios";
 
 const customerLimit = 10;
 let data = await loadData();
@@ -18,6 +19,19 @@ const map = L.map("map", {
 }).setView([42.00460346805377, 20.966042350751334], 14.5);
 // map.dragging.disable();
 
+let request = {
+    source: {},
+    destinations: [],
+
+};
+
+document.getElementById("calc").addEventListener("click", async () => {
+    axios.post('http://localhost:8080/v1/route', request).then(
+        response => {
+            console.log({response})
+        }
+    )
+})
 
 L.tileLayer("https://{s}.tile.osm.org/{z}/{x}/{y}.png", {
     attribution:
@@ -101,7 +115,7 @@ let colors = [
     'tomato',
 ]
 
-generateRandomLocations()
+// generateRandomLocations()
 
 function generateRandomLocations() {
     let startX = 20.96,
@@ -175,17 +189,36 @@ document.getElementById("next-3").addEventListener("click", () => {
 
 })
 
+let i = 0;
 map.on("click", (event) => {
-    if (locations.length !== customerLimit + 1) {
-        addLocation([event.latlng.lat, event.latlng.lng]);
+    let coordinate;
+    if (i === 0) {
+        coordinate = request.source;
+        L.marker([event.latlng.lat, event.latlng.lng], {
+            icon: greenIcon
+        }).addTo(map);
     } else {
-        map.off('click');
-        loading(true);
-        let route = generateRoute();
-        route.then(() => {
-            loading(false)
-        })
+        coordinate = request.destinations[i] = {};
+        L.marker([event.latlng.lat, event.latlng.lng], {
+            icon: blueIcon
+        }).addTo(map);
     }
+    coordinate.latitude = event.latlng.lat;
+    coordinate.logitude = event.latlng.lng;
+
+    console.log(request)
+    i++;
+
+    // if (locations.length !== customerLimit + 1) {
+    //     addLocation([event.latlng.lat, event.latlng.lng]);
+    // } else {
+    //     map.off('click');
+    //     loading(true);
+    //     let route = generateRoute();
+    //     route.then(() => {
+    //         loading(false)
+    //     })
+    // }
 })
 
 MicroModal.init();
