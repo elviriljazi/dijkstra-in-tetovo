@@ -1,12 +1,13 @@
 import "./style.css";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+import "leaflet-polylinedecorator";
 import './utilities/streets.js'
 import {findNearestNode, loadData} from "./utilities/streets.js";
 import MicroModal from 'micromodal';
-import applyDijkstra from "./utilities/dijkstra.js";
-import {loading} from "./utilities/common.js";
+import {loading, updateProgress} from "./utilities/common.js";
 import {blueIcon, greenIcon} from "./utilities/markers.js";
+import RouteWorker from "./utilities/dijkstra.worker.js?worker";
 
 const customerLimit = 10;
 let data = await loadData();
@@ -34,53 +35,58 @@ function closeModal(modal) {
     MicroModal.close(modal);
 }
 
-function findNearestLocation(locations, distances) {
-    let nearestLocation = undefined;
-    let minDistance = Number.MAX_VALUE;
-    for (let index = 0; index < locations.length; index++) {
-        let location = locations.at(index);
-        let distance = distances[location];
-        if (distance < minDistance) {
-            minDistance = distance;
-            nearestLocation = location;
-        }
-    }
-    return nearestLocation;
+function drawRouteLeg(path) {
+    let polyline = L.polyline(path, {
+        color: 'red',
+        weight: 3,
+        smoothFactor: 1
+    }).addTo(map);
+
+    L.polylineDecorator(polyline, {
+        patterns: [
+            {
+                offset: '5%',
+                repeat: '8%',
+                symbol: L.Symbol.arrowHead({
+                    pixelSize: 10,
+                    polygon: false,
+                    pathOptions: {stroke: true, color: 'red', weight: 2}
+                })
+            }
+        ]
+    }).addTo(map);
 }
 
-async function generateRoute() {
-    return new Promise(async (resolve, reject) => {
-        let initPoint = locations.shift();
-        let startPoint = initPoint;
-        for (let i = 0; i <= customerLimit; i++) {
-            let dijkstra = await applyDijkstra(data.cityMap, startPoint);
-            let destinationPoint = locations.length === 0 ? initPoint :
-                findNearestLocation(locations, dijkstra.distances);
-            let path = [];
-            String(dijkstra.paths[destinationPoint]).split("->")
-                .forEach((coordinate) => {
-                    path.push(coordinate.split(","));
-                })
-            // console.log(`
-            // index:  ${i}
-            // locations:  ${locations}
-            // startPoint:  ${startPoint}
-            // destinationPoint: ${destinationPoint}
-            // path: ${path}
-            //    `)
+function generateRoute() {
+    return new Promise((resolve, reject) => {
+        let worker = new RouteWorker();
 
-            startPoint = destinationPoint;
-            locations = locations.filter(location => location !== destinationPoint);
+        worker.onmessage = (event) => {
+            let message = event.data;
+            switch (message.type) {
+                case 'leg':
+                    drawRouteLeg(message.path);
+                    break;
+                case 'progress':
+                    updateProgress(message.current, message.total);
+                    break;
+                case 'done':
+                    worker.terminate();
+                    resolve();
+                    break;
+                case 'error':
+                    worker.terminate();
+                    reject(new Error(message.message));
+                    break;
+            }
+        };
 
-            L.polyline(path,
-                {
-                    color: 'red',
-                    weight: 3,
-                    smoothFactor: 1
-                }).addTo(map)
-            console.log("route " + Date.now())
-            resolve();
-        }
+        worker.onerror = (error) => {
+            worker.terminate();
+            reject(error);
+        };
+
+        worker.postMessage({cityMap: data.cityMap, locations});
     })
 }
 
@@ -138,10 +144,14 @@ document.getElementById("next-3").addEventListener("click", () => {
         } else {
             map.off('click');
             loading(true);
-            let route = generateRoute();
-            route.then(() => {
-                loading(false)
-            })
+            generateRoute()
+                .then(() => {
+                    loading(false)
+                })
+                .catch((error) => {
+                    console.error(error);
+                    loading(false);
+                })
         }
     })
 })

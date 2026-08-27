@@ -9,7 +9,13 @@
 <body>
 
 <div id="loading" class="loading">
-    <p>Loading...</p>
+    <div class="progress-container">
+        <p>Calculating best route...</p>
+        <div class="progress-bar">
+            <div id="progress-bar-fill" class="progress-bar-fill"></div>
+        </div>
+        <p id="progress-text">0%</p>
+    </div>
 </div>
 <div id="map"></div>
 
