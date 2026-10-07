@@ -1,7 +1,13 @@
-export default function applyDijkstra(cityMap, startPoint) {
+export default function applyDijkstra(cityMap, startPoint, {targets = [], onVisit} = {}) {
     // Create an object to store the shortest distance from the start point to every end points
     let distances = {};
     let paths = [];
+
+    // The point each point was reached from, used to report the search as it advances
+    let previousPoints = {};
+
+    // Points to stop the search at, the first one reached is the nearest one
+    let targetPoints = new Set(targets.map(String));
 
     // A set to keep track of all visited points
     let visitedPoints = new Set();
@@ -29,6 +35,16 @@ export default function applyDijkstra(cityMap, startPoint) {
         // Mark the chosen point as visited
         visitedPoints.add(closestPoint);
 
+        // Report the street segment the search has just advanced through
+        if (onVisit && previousPoints[closestPoint] !== undefined) {
+            onVisit(closestPoint, previousPoints[closestPoint]);
+        }
+
+        // Stop searching as soon as a target point is reached
+        if (targetPoints.has(closestPoint)) {
+            break;
+        }
+
         // Iterate for each neighboring point of the current point
         for (let neighborPoint in cityMap[closestPoint]) {
             // If the neighbor hasn't been visited yet
@@ -41,6 +57,7 @@ export default function applyDijkstra(cityMap, startPoint) {
                     // Update the shortest distance to this neighbor
                     distances[neighborPoint] = newDistance;
                     paths[neighborPoint] = paths[closestPoint] + "->" + neighborPoint;
+                    previousPoints[neighborPoint] = closestPoint;
                 }
             }
         }

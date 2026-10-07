@@ -14,6 +14,9 @@ function findNearestLocation(locations, distances) {
     return nearestLocation;
 }
 
+// Number of searched street segments sent to the map at once
+const searchBatchSize = 20;
+
 self.onmessage = (event) => {
     const {cityMap, locations} = event.data;
 
@@ -24,7 +27,24 @@ self.onmessage = (event) => {
         const total = remaining.length + 1;
 
         for (let i = 0; i < total; i++) {
-            const dijkstra = applyDijkstra(cityMap, startPoint);
+            let segments = [];
+            const flushSegments = () => {
+                if (segments.length > 0) {
+                    self.postMessage({type: "search", segments});
+                    segments = [];
+                }
+            };
+
+            const dijkstra = applyDijkstra(cityMap, startPoint, {
+                targets: remaining.length === 0 ? [initPoint] : remaining,
+                onVisit: (point, previousPoint) => {
+                    segments.push([previousPoint.split(","), point.split(",")]);
+                    if (segments.length >= searchBatchSize) {
+                        flushSegments();
+                    }
+                }
+            });
+            flushSegments();
             const destinationPoint = remaining.length === 0 ? initPoint
                 : findNearestLocation(remaining, dijkstra.distances);
 
@@ -38,7 +58,6 @@ self.onmessage = (event) => {
             remaining = remaining.filter(location => location !== destinationPoint);
 
             self.postMessage({type: "leg", path});
-            self.postMessage({type: "progress", current: i + 1, total});
         }
 
         self.postMessage({type: "done"});

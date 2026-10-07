@@ -8,52 +8,30 @@ body {
     z-index: 0;
 }
 
-.loading {
-    background: rgba(255, 255, 255, 0.85);
-    height: 100vh;
-    width: 100vw;
-    display: none;
-    position: absolute;
-    top: 0;
-    left: 0;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    z-index: 1000;
-}
-
-.progress-container {
+.legend {
     background: #fff;
-    padding: 1.5rem 2.5rem;
+    padding: 0.75rem 1rem;
     border-radius: 8px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    min-width: 280px;
     font-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif;
+    font-size: .875rem;
     color: rgba(0, 0, 0, .8);
 }
 
-.progress-bar {
-    width: 100%;
-    height: 10px;
-    background: #e6e6e6;
-    border-radius: 5px;
-    overflow: hidden;
-    margin: 0.75rem 0;
+.legend__item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
-.progress-bar-fill {
-    height: 100%;
-    width: 0;
-    background: #00449e;
-    border-radius: 5px;
-    transition: width 0.2s ease;
+.legend__item + .legend__item {
+    margin-top: 0.4rem;
 }
 
-#progress-text {
-    margin: 0;
-    font-size: .875rem;
-    color: #00449e;
-    font-weight: 600;
+.legend__symbol {
+    width: 30px;
+    height: 20px;
+    object-fit: contain;
 }
 
 /**************************\
